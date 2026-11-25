@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>超频语境 - 3153分级词汇</title>
+<style>
+:root{--bg:#0f0f1a;--bg2:#1a1a2e;--bg3:#252540;--card:#1e1e35;--border:#2d2d50;--text:#e8e8f0;--text2:#a0a0b8;--accent:#6c63ff;--accent2:#ff6584;--success:#4ecdc4;--warning:#ffe66d;--star5:#ff6b6b;--star4:#ffa726;--star3:#66bb6a;--shadow:0 8px 32px rgba(0,0,0,.3)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.header{background:linear-gradient(135deg,var(--bg2),var(--bg3));border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.header-title{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-subtitle{font-size:12px;color:var(--text2);margin-top:2px}
+.header-stats{display:flex;gap:16px;align-items:center}
+.stat-badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--text2)}
+.stat-badge strong{color:var(--accent)}
+.nav-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;gap:4px}
+.nav-tab{padding:12px 24px;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.container{max-width:900px;margin:0 auto;padding:24px}
+.page{display:none}.page.active{display:block}
+.level-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.level-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:all .3s;text-align:center}
+.level-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.level-card.selected{border-color:var(--accent);box-shadow:0 0 20px rgba(108,99,255,.2)}
+.level-stars{font-size:24px;margin-bottom:8px}
+.level-name{font-size:16px;font-weight:600;margin-bottom:4px}
+.level-count{font-size:13px;color:var(--text2)}
+.level-progress{margin-top:12px;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.level-progress-bar{height:100%;border-radius:2px;transition:width .5s}
+.count-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:20px}
+.count-section label{font-size:14px;color:var(--text2);display:block;margin-bottom:10px}
+.count-section input[type=range]{width:100%;height:6px;-webkit-appearance:none;appearance:none;background:var(--bg);border-radius:3px;outline:none}
+.count-section input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer}
+.count-display{text-align:center;font-size:28px;font-weight:700;color:var(--accent);margin-top:8px}
+.btn-start{width:100%;padding:16px;font-size:16px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--accent),#8b5cf6);border:none;border-radius:12px;cursor:pointer;transition:all .3s}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,.4)}
+.study-progress{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.study-progress-text{font-size:14px;color:var(--text2)}
+.study-progress-text strong{color:var(--accent)}
+.study-progress-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;margin:0 16px;overflow:hidden}
+.study-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:3px;transition:width .3s}
+.word-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;text-align:center;position:relative;overflow:hidden}
+.word-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
+.word-card.lv5::before{background:var(--star5)}.word-card.lv4::before{background:var(--star4)}.word-card.lv3::before{background:var(--star3)}
+.word-level-tag{display:inline-block;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:16px}
+.word-level-tag.lv5{background:rgba(255,107,107,.15);color:var(--star5)}.word-level-tag.lv4{background:rgba(255,167,38,.15);color:var(--star4)}.word-level-tag.lv3{background:rgba(102,187,106,.15);color:var(--star3)}
+.word-text{font-size:48px;font-weight:800;letter-spacing:1px;margin-bottom:8px}
+.word-phonetic{font-size:18px;color:var(--text2);margin-bottom:16px;font-family:'Lucida Console',monospace}
+.word-pos{display:inline-block;padding:3px 10px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--accent);margin-bottom:20px}
+.word-meaning{font-size:22px;color:var(--text);padding:20px;background:var(--bg);border-radius:12px;margin-top:16px;display:none}
+.word-meaning.show{display:block;animation:fadeIn .3s}
+.speak-btn{background:linear-gradient(135deg,var(--accent),#8b5cf6);border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;transition:all .3s;box-shadow:0 4px 16px rgba(108,99,255,.3)}
+.speak-btn:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(108,99,255,.5)}
+.speak-btn:active{transform:scale(.95)}
+.speak-btn svg{width:24px;height:24px;fill:#fff}
+.study-actions{display:flex;gap:12px;margin-top:24px}
+.study-btn{flex:1;padding:14px;font-size:15px;font-weight:600;border:none;border-radius:12px;cursor:pointer;transition:all .2s}
+.btn-remember{background:rgba(78,205,196,.15);color:var(--success);border:1px solid rgba(78,205,196,.3)}
+.btn-remember:hover{background:rgba(78,205,196,.25)}
+.btn-forgot{background:rgba(255,101,132,.15);color:var(--accent2);border:1px solid rgba(255,101,132,.3)}
+.btn-forgot:hover{background:rgba(255,101,132,.25)}
+.btn-show{background:rgba(108,99,255,.15);color:var(--accent);border:1px solid rgba(108,99,255,.3)}
+.btn-show:hover{background:rgba(108,99,255,.25)}
+.review-empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.review-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.review-stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.review-stat-num{font-size:28px;font-weight:700}
+.review-stat-num.red{color:var(--accent2)}.review-stat-num.green{color:var(--success)}.review-stat-num.yellow{color:var(--warning)}
+.review-stat-label{font-size:12px;color:var(--text2);margin-top:4px}
+.review-list{display:flex;flex-direction:column;gap:8px}
+.review-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s}
+.review-item:hover{background:var(--bg3)}
+.review-item-word{font-weight:600;font-size:16px;min-width:120px}
+.review-item-phonetic{color:var(--text2);font-size:13px;font-family:'Lucida Console',monospace;flex:1}
+.review-item-meaning{color:var(--text2);font-size:14px;flex:2}
+.review-item-status{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:600}
+.status-remembered{background:rgba(78,205,196,.15);color:var(--success)}.status-forgot{background:rgba(255,101,132,.15);color:var(--accent2)}
+.review-item-speak{background:none;border:1px solid var(--border);border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.review-item-speak:hover{background:var(--accent);border-color:var(--accent)}
+.review-item-speak svg{width:14px;height:14px;fill:var(--text2)}
+.review-item-speak:hover svg{fill:#fff}
+.dict-search{width:100%;padding:14px 20px;font-size:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);outline:none;margin-bottom:16px;transition:border-color .2s}
+.dict-search:focus{border-color:var(--accent)}.dict-search::placeholder{color:var(--text2)}
+.dict-result{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+.dict-word{font-size:32px;font-weight:700}
+.dict-phonetic{font-size:16px;color:var(--text2);font-family:'Lucida Console',monospace;margin-top:4px}
+.dict-pos{display:inline-block;padding:3px 10px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--accent);margin-top:8px}
+.dict-meaning{font-size:18px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.dict-level{margin-top:8px;font-size:13px;color:var(--text2)}
+.dict-not-found{text-align:center;color:var(--text2);padding:40px}
+.result-overlay{position:fixed;inset:0;background:rgba(15,15,26,.9);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:200}
+.result-overlay.show{display:flex}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px;text-align:center;max-width:420px;width:90%}
+.result-title{font-size:28px;font-weight:700;margin-bottom:24px}
+.result-score{font-size:64px;font-weight:800;background:linear-gradient(135deg,var(--success),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.result-detail{display:flex;justify-content:center;gap:32px;margin:24px 0}
+.result-detail-item{text-align:center}
+.result-detail-num{font-size:24px;font-weight:700}
+.result-detail-num.green{color:var(--success)}.result-detail-num.red{color:var(--accent2)}
+.result-detail-label{font-size:13px;color:var(--text2);margin-top:4px}
+.result-btns{display:flex;gap:12px;margin-top:24px}
+.result-btns button{flex:1;padding:12px;font-size:14px;font-weight:600;border:none;border-radius:10px;cursor:pointer;transition:all .2s}
+.btn-review-wrong{background:rgba(255,101,132,.15);color:var(--accent2);border:1px solid rgba(255,101,132,.3)}
+.btn-back-home{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+.speed-control{display:flex;align-items:center;gap:8px;margin-top:8px;justify-content:center}
+.speed-btn{padding:4px 10px;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;transition:all .2s}
+.speed-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.speed-label{font-size:12px;color:var(--text2)}
+.back-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text2);padding:8px 16px;font-size:13px;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.keyboard-hint{text-align:center;margin-top:12px;font-size:12px;color:var(--text2)}
+.kbd{display:inline-block;padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;font-size:11px;font-family:monospace}
+@media(max-width:640px){.header{padding:12px 16px}.header-title{font-size:18px}.container{padding:16px}.word-text{font-size:36px}.word-meaning{font-size:18px}.level-selector{grid-template-columns:1fr}.review-item{flex-wrap:wrap}.study-actions{flex-wrap:wrap}}
+
+/* ===== Browse Card Mode (single card) ===== */
+.card-setup-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.card-setup-panel h3{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.card-setup-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.card-setup-opt{padding:8px 18px;font-size:13px;font-weight:500;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text2);cursor:pointer;transition:all .2s}
+.card-setup-opt.selected{background:rgba(108,99,255,.15);border-color:var(--accent);color:var(--accent)}
+.bc-progress{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bc-progress-text{font-size:14px;color:var(--text2)}
+.bc-progress-text strong{color:var(--accent)}
+.bc-progress-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;margin:0 16px;overflow:hidden}
+.bc-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:3px;transition:width .3s}
+.bc-card-wrapper{display:flex;align-items:center;gap:12px;justify-content:center}
+.bc-nav-btn{width:44px;height:64px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;font-size:28px;color:var(--text2);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bc-nav-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.bc-nav-btn:disabled{opacity:.3;cursor:default}
+.bc-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 36px;position:relative;overflow:hidden;flex:1;max-width:560px;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.bc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
+.bc-card.lv5::before{background:var(--star5)}.bc-card.lv4::before{background:var(--star4)}.bc-card.lv3::before{background:var(--star3)}
+.bc-level-tag{position:absolute;top:14px;left:18px;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.bc-level-tag.lv5{background:rgba(255,107,107,.15);color:var(--star5)}.bc-level-tag.lv4{background:rgba(255,167,38,.15);color:var(--star4)}.bc-level-tag.lv3{background:rgba(102,187,106,.15);color:var(--star3)}
+.bc-speak-btn{position:absolute;top:14px;right:16px;background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.25);border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.bc-speak-btn:hover{background:var(--accent);border-color:var(--accent)}
+.bc-speak-btn svg{width:16px;height:16px;fill:var(--text2)}
+.bc-speak-btn:hover svg{fill:#fff}
+.bc-word{font-size:48px;font-weight:800;letter-spacing:1px;margin-bottom:8px;text-align:center}
+.bc-phonetic{font-size:18px;color:var(--text2);margin-bottom:16px;font-family:'Lucida Console',monospace;text-align:center}
+.bc-pos{display:inline-block;padding:3px 10px;background:var(--bg3);border-radius:8px;font-size:13px;color:var(--accent);margin-bottom:20px}
+.bc-meaning{font-size:22px;color:var(--text);text-align:center;line-height:1.6}
+.bc-hint{text-align:center;margin-top:16px;font-size:12px;color:var(--text2)}
+.bc-back-btn{margin-bottom:16px}
+.card-empty{text-align:center;padding:60px 20px;color:var(--text2)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">超频语境 · 3153分级词汇</div>
+    <div class="header-subtitle">跟着ALEX梁焕臻校长，用脑科学轻松搞定英语</div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-badge">已学 <strong id="totalLearned">0</strong></div>
+    <div class="stat-badge">掌握 <strong id="totalMastered">0</strong></div>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" data-page="home">背单词</button>
+  <button class="nav-tab" data-page="flashcard">卡片</button>
+  <button class="nav-tab" data-page="review">复习</button>
+  <button class="nav-tab" data-page="dict">词典</button>
+  <button class="nav-tab" data-page="settings">设置</button>
+</div>
+
+<!-- Home -->
+<div class="page active" id="page-home">
+<div class="container">
+  <div class="level-selector" id="levelSelector">
+    <div class="level-card selected" data-level="五星" onclick="selectLevel(this)">
+      <div class="level-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="level-name">五星词汇</div>
+      <div class="level-count" id="count5">679 词 · 最高频</div>
+      <div class="level-progress"><div class="level-progress-bar" style="width:0%;background:var(--star5)" id="prog5"></div></div>
+    </div>
+    <div class="level-card" data-level="四星" onclick="selectLevel(this)">
+      <div class="level-stars">&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="level-name">四星词汇</div>
+      <div class="level-count" id="count4">1039 词 · 高频</div>
+      <div class="level-progress"><div class="level-progress-bar" style="width:0%;background:var(--star4)" id="prog4"></div></div>
+    </div>
+    <div class="level-card" data-level="三星" onclick="selectLevel(this)">
+      <div class="level-stars">&#9733;&#9733;&#9733;</div>
+      <div class="level-name">三星词汇</div>
+      <div class="level-count" id="count3">1435 词 · 常用</div>
+      <div class="level-progress"><div class="level-progress-bar" style="width:0%;background:var(--star3)" id="prog3"></div></div>
+    </div>
+  </div>
+  <div class="count-section">
+    <label>每次学习单词数量（上限100）</label>
+    <input type="range" id="countSlider" min="10" max="100" value="30" step="5" oninput="document.getElementById('countDisplay').textContent=this.value">
+    <div class="count-display" id="countDisplay">30</div>
+  </div>
+  <button class="btn-start" onclick="startStudy()">开始学习</button>
+</div>
+</div>
+
+<!-- Study -->
+<div class="page" id="page-study">
+<div class="container">
+  <button class="back-btn" onclick="exitStudy()">&#8592; 返回</button>
+  <div class="study-progress">
+    <span class="study-progress-text"><strong id="studyCurrent">1</strong> / <span id="studyTotal">30</span></span>
+    <div class="study-progress-bar"><div class="study-progress-fill" id="studyProgressFill" style="width:0%"></div></div>
+  </div>
+  <div class="word-card" id="wordCard">
+    <div class="word-level-tag" id="wordLevelTag"></div>
+    <div class="word-text" id="wordText"></div>
+    <div class="word-phonetic" id="wordPhonetic"></div>
+    <button class="speak-btn" id="speakBtn" onclick="speakCurrent()">
+      <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    </button>
+    <div class="speed-control">
+      <span class="speed-label">语速:</span>
+      <button class="speed-btn" data-rate="0.7" onclick="setRate(this)">慢</button>
+      <button class="speed-btn active" data-rate="1" onclick="setRate(this)">正常</button>
+      <button class="speed-btn" data-rate="1.3" onclick="setRate(this)">快</button>
+    </div>
+    <div class="word-pos" id="wordPos"></div>
+    <div class="word-meaning" id="wordMeaning"></div>
+  </div>
+  <div class="study-actions">
+    <button class="study-btn btn-show" onclick="showMeaning()">显示释义</button>
+    <button class="study-btn btn-forgot" onclick="markWord(false)">不认识</button>
+    <button class="study-btn btn-remember" onclick="markWord(true)">认识</button>
+  </div>
+  <div class="keyboard-hint">
+    <span class="kbd">Space</span> 显示释义 &nbsp;
+    <span class="kbd">&larr;</span> 不认识 &nbsp;
+    <span class="kbd">&rarr;</span> 认识
+  </div>
+</div>
+</div>
+
+<!-- Browse Card -->
+<div class="page" id="page-flashcard">
+<div class="container">
+
+  <!-- Setup Panel -->
+  <div id="bcSetupPanel">
+    <div class="card-setup-panel">
+      <h3>选择词汇等级</h3>
+      <div class="card-setup-row" id="bcLevelRow">
+        <div class="card-setup-opt selected" data-level="五星">⭐⭐⭐⭐⭐ 五星</div>
+        <div class="card-setup-opt" data-level="四星">⭐⭐⭐⭐ 四星</div>
+        <div class="card-setup-opt" data-level="三星">⭐⭐⭐ 三星</div>
+        <div class="card-setup-opt" data-level="all">📚 全部</div>
+      </div>
+    </div>
+    <div class="card-setup-panel">
+      <h3>卡片来源</h3>
+      <div class="card-setup-row" id="bcSourceRow">
+        <div class="card-setup-opt selected" data-source="all">全部单词</div>
+        <div class="card-setup-opt" data-source="unlearned">未学过</div>
+        <div class="card-setup-opt" data-source="forgot">不认识</div>
+      </div>
+    </div>
+    <div class="count-section">
+      <label>显示数量（上限200）</label>
+      <input type="range" id="bcCountSlider" min="10" max="200" value="50" step="10"
+             oninput="document.getElementById('bcCountDisplay').textContent=this.value">
+      <div class="count-display" id="bcCountDisplay">50</div>
+    </div>
+    <button class="btn-start" onclick="startBrowseCards()">开始浏览</button>
+  </div>
+
+  <!-- Single Card Panel -->
+  <div id="bcBrowsePanel" style="display:none">
+    <button class="back-btn card-back-btn" onclick="exitBrowseCards()">← 返回</button>
+    <div class="bc-progress">
+      <span class="bc-progress-text"><strong id="bcCurrent">1</strong> / <span id="bcTotal">50</span></span>
+      <div class="bc-progress-bar"><div class="bc-progress-fill" id="bcProgFill" style="width:0%"></div></div>
+    </div>
+    <div class="bc-card-wrapper">
+      <button class="bc-nav-btn bc-nav-prev" id="bcPrevBtn" onclick="bcPrev()" title="上一张">‹</button>
+      <div class="bc-card" id="bcCard">
+        <div class="bc-level-tag" id="bcLevelTag"></div>
+        <button class="bc-speak-btn" id="bcSpeakBtn" onclick="bcSpeak()" title="朗读">
+          <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </button>
+        <div class="bc-word" id="bcWord"></div>
+        <div class="bc-phonetic" id="bcPhonetic"></div>
+        <div class="bc-pos" id="bcPos"></div>
+        <div class="bc-meaning" id="bcMeaning"></div>
+      </div>
+      <button class="bc-nav-btn bc-nav-next" id="bcNextBtn" onclick="bcNext()" title="下一张">›</button>
+    </div>
+    <div class="bc-hint">
+      <span class="kbd">←</span> 上一张 &nbsp; <span class="kbd">→</span> 下一张 &nbsp; <span class="kbd">Space</span> 朗读
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Review -->
+<div class="page" id="page-review">
+<div class="container">
+  <div class="review-stats">
+    <div class="review-stat-card"><div class="review-stat-num green" id="reviewRemembered">0</div><div class="review-stat-label">已掌握</div></div>
+    <div class="review-stat-card"><div class="review-stat-num red" id="reviewForgot">0</div><div class="review-stat-label">待复习</div></div>
+    <div class="review-stat-card"><div class="review-stat-num yellow" id="reviewTotal">0</div><div class="review-stat-label">总学习</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="study-btn btn-remember" style="flex:1" onclick="reviewFilter='all';renderReviewList()">全部</button>
+    <button class="study-btn btn-forgot" style="flex:1" onclick="reviewFilter='forgot';renderReviewList()">不认识</button>
+    <button class="study-btn btn-show" style="flex:1" onclick="startReviewWrong()">复习错词</button>
+  </div>
+  <div class="review-list" id="reviewList"></div>
+</div>
+</div>
+
+<!-- Dict -->
+<div class="page" id="page-dict">
+<div class="container">
+  <input class="dict-search" id="dictSearch" placeholder="输入英文单词搜索..." oninput="searchDict()">
+  <div id="dictResult"><div class="dict-not-found">输入单词查看释义和发音</div></div>
+</div>
+</div>
+
+<!-- Settings -->
+<div class="page" id="page-settings">
+<div class="container">
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">数据管理</h2>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">导出学习进度</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">将当前学习记录导出为JSON文件，可备份或在其他设备导入恢复。</p>
+    <div style="margin-bottom:12px;">
+      <span style="font-size:13px;color:var(--text2);">已学单词: <strong style="color:var(--accent)" id="exportCount">0</strong></span>
+    </div>
+    <button class="btn-start" style="padding:12px;font-size:14px;" onclick="exportProgress()">导出进度文件</button>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">导入学习进度</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">从之前导出的JSON文件恢复学习记录。<span style="color:var(--accent2);">注意：导入会合并数据，不会覆盖已有记录。</span></p>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProgress(event)">
+    <button class="btn-start" style="padding:12px;font-size:14px;background:linear-gradient(135deg,var(--success),#2ecc71);" onclick="document.getElementById('importFile').click()">选择文件导入</button>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">清除学习记录</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">清空所有学习进度数据。此操作不可恢复，请先导出备份！</p>
+    <button class="btn-start" style="padding:12px;font-size:14px;background:linear-gradient(135deg,var(--accent2),#e74c3c);" onclick="clearProgress()">清除所有数据</button>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">关于</h3>
+    <p style="font-size:13px;color:var(--text2);line-height:1.8;">
+      超频语境 · 3153分级词汇背单词应用<br>
+      数据来源: 网易内部3153分级词汇书<br>
+      词汇总数: <span id="aboutTotal">2959</span> 词<br>
+      发音引擎: Web Speech API (浏览器内置)<br>
+      数据存储: 浏览器本地 (localStorage)
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+<div class="result-card">
+  <div class="result-title">学习完成!</div>
+  <div class="result-score" id="resultScore">0%</div>
+  <div class="result-detail">
+    <div class="result-detail-item"><div class="result-detail-num green" id="resultRemembered">0</div><div class="result-detail-label">认识</div></div>
+    <div class="result-detail-item"><div class="result-detail-num red" id="resultForgot">0</div><div class="result-detail-label">不认识</div></div>
+  </div>
+  <div class="result-btns">
+    <button class="btn-review-wrong" onclick="reviewWrongWords()">复习错词</button>
+    <button class="btn-back-home" onclick="backToHome()">返回首页</button>
+  </div>
+</div>
+</div>
+
+<script src="vocab-compact.js"></script>
+<script>
+// V is loaded from vocab-compact.js: [[word, phonetic, pos, meaning, level], ...]
+var VOCAB = V;
+delete V;
+
+// Level map
+var LV_MAP = {'五星':'lv5','四星':'lv4','三星':'lv3'};
+var LV_CN = {'lv5':'五星','lv4':'四星','lv3':'三星'};
+
+// ===== State =====
+var STORAGE_KEY = 'vocab3153';
+var appState = loadState();
+var currentStudy = null;
+var speakRate = 1;
+var reviewFilter = 'all';
+
+function loadState() {
+  try { var s = localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch(e){}
+  return { learned: {} };
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch(e){}
+}
+
+// ===== Navigation =====
+document.querySelectorAll('.nav-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active')});
+    tab.classList.add('active');
+    var page = tab.getAttribute('data-page');
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+    document.getElementById('page-' + page).classList.add('active');
+    if (page === 'review') renderReviewList();
+  });
+});
+
+// ===== Level =====
+var selectedLevel = '五星';
+
+function selectLevel(el) {
+  document.querySelectorAll('.level-card').forEach(function(c){c.classList.remove('selected')});
+  el.classList.add('selected');
+  selectedLevel = el.getAttribute('data-level');
+}
+
+function updateLevelProgress() {
+  var counts = {'五星':0,'四星':0,'三星':0};
+  var learned_counts = {'五星':0,'四星':0,'三星':0};
+  for (var i=0;i<VOCAB.length;i++) {
+    var lv = VOCAB[i][4];
+    counts[lv] = (counts[lv]||0) + 1;
+    if (appState.learned[VOCAB[i][0]]) learned_counts[lv] = (learned_counts[lv]||0) + 1;
+  }
+  var ids = {'五星':'prog5','四星':'prog4','三星':'prog3'};
+  for (var k in ids) {
+    var pct = counts[k] ? Math.round(learned_counts[k]/counts[k]*100) : 0;
+    document.getElementById(ids[k]).style.width = pct + '%';
+  }
+  var totalLearned = Object.keys(appState.learned).length;
+  var totalMastered = 0;
+  for (var w in appState.learned) {
+    if (appState.learned[w].remembered && appState.learned[w].count >= 2) totalMastered++;
+  }
+  document.getElementById('totalLearned').textContent = totalLearned;
+  document.getElementById('totalMastered').textContent = totalMastered;
+}
+
+// ===== Study =====
+function startStudy(customWords) {
+  var words;
+  if (customWords) {
+    words = customWords.slice();
+  } else {
+    var count = parseInt(document.getElementById('countSlider').value);
+    words = VOCAB.filter(function(w){return w[4]===selectedLevel});
+    var unlearned = words.filter(function(w){return !appState.learned[w[0]]});
+    var learned = words.filter(function(w){return appState.learned[w[0]]});
+    shuffle(unlearned);
+    shuffle(learned);
+    words = unlearned.concat(learned).slice(0, count);
+  }
+
+  if (words.length === 0) { alert('没有可学习的单词'); return; }
+  shuffle(words);
+
+  currentStudy = { words: words, index: 0, remembered: [], forgot: [], meaningShown: false };
+
+  // Switch to study page
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('page-study').classList.add('active');
+
+  document.getElementById('studyTotal').textContent = words.length;
+  showCurrentWord();
+}
+
+function showCurrentWord() {
+  if (!currentStudy) return;
+  var w = currentStudy.words[currentStudy.index];
+  var word=w[0], phonetic=w[1], pos=w[2], meaning=w[3], level=w[4];
+  var lvClass = LV_MAP[level] || 'lv3';
+
+  document.getElementById('studyCurrent').textContent = currentStudy.index + 1;
+  var pct = (currentStudy.index / currentStudy.words.length) * 100;
+  document.getElementById('studyProgressFill').style.width = pct + '%';
+
+  var card = document.getElementById('wordCard');
+  card.className = 'word-card ' + lvClass;
+  var tag = document.getElementById('wordLevelTag');
+  tag.className = 'word-level-tag ' + lvClass;
+  tag.textContent = level;
+
+  document.getElementById('wordText').textContent = word;
+  document.getElementById('wordPhonetic').textContent = phonetic ? '/' + phonetic + '/' : '';
+  document.getElementById('wordPos').textContent = pos || '';
+  var meaningEl = document.getElementById('wordMeaning');
+  meaningEl.textContent = meaning;
+  meaningEl.classList.remove('show');
+
+  currentStudy.meaningShown = false;
+  setTimeout(function(){ speakCurrent(); }, 300);
+}
+
+function showMeaning() {
+  if (!currentStudy || currentStudy.meaningShown) return;
+  currentStudy.meaningShown = true;
+  document.getElementById('wordMeaning').classList.add('show');
+}
+
+function markWord(remembered) {
+  if (!currentStudy) return;
+  var w = currentStudy.words[currentStudy.index];
+  var word = w[0];
+
+  if (remembered) { currentStudy.remembered.push(w); }
+  else { currentStudy.forgot.push(w); }
+
+  if (!appState.learned[word]) {
+    appState.learned[word] = { remembered: remembered, count: 1, lastTime: Date.now() };
+  } else {
+    appState.learned[word].remembered = remembered;
+    appState.learned[word].count = (appState.learned[word].count || 0) + 1;
+    appState.learned[word].lastTime = Date.now();
+  }
+  saveState();
+
+  currentStudy.index++;
+  if (currentStudy.index >= currentStudy.words.length) { finishStudy(); }
+  else { showCurrentWord(); }
+}
+
+function finishStudy() {
+  var rem = currentStudy.remembered.length;
+  var forgot = currentStudy.forgot.length;
+  var total = currentStudy.words.length;
+  var score = total > 0 ? Math.round(rem / total * 100) : 0;
+  document.getElementById('resultScore').textContent = score + '%';
+  document.getElementById('resultRemembered').textContent = rem;
+  document.getElementById('resultForgot').textContent = forgot;
+  document.getElementById('resultOverlay').classList.add('show');
+  updateLevelProgress();
+}
+
+function reviewWrongWords() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  if (currentStudy && currentStudy.forgot.length > 0) { startStudy(currentStudy.forgot); }
+}
+
+function backToHome() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  currentStudy = null;
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('.nav-tab[data-page="home"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('page-home').classList.add('active');
+  updateLevelProgress();
+}
+
+function exitStudy() {
+  if (currentStudy && currentStudy.index > 0) { if(!confirm('确定退出？')) return; }
+  currentStudy = null;
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('.nav-tab[data-page="home"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById('page-home').classList.add('active');
+  updateLevelProgress();
+}
+
+// ===== Speech =====
+function speakCurrent() {
+  if (!currentStudy) return;
+  speakWord(currentStudy.words[currentStudy.index][0]);
+}
+
+function speakWord(word) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US';
+  u.rate = speakRate;
+  u.pitch = 1;
+  var voices = window.speechSynthesis.getVoices();
+  var v = null;
+  for (var i=0;i<voices.length;i++) {
+    if (voices[i].lang && voices[i].lang.indexOf('en')===0) { v = voices[i]; break; }
+  }
+  if (v) u.voice = v;
+  window.speechSynthesis.speak(u);
+}
+
+function setRate(btn) {
+  document.querySelectorAll('.speed-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  speakRate = parseFloat(btn.getAttribute('data-rate'));
+}
+
+// Ensure voices loaded
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = function(){};
+}
+
+// ===== Keyboard =====
+document.addEventListener('keydown', function(e) {
+  if (!currentStudy) return;
+  var studyPage = document.getElementById('page-study');
+  if (!studyPage.classList.contains('active')) return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (!currentStudy.meaningShown) showMeaning();
+    else markWord(true);
+  } else if (e.code === 'ArrowRight') {
+    e.preventDefault(); markWord(true);
+  } else if (e.code === 'ArrowLeft') {
+    e.preventDefault(); markWord(false);
+  }
+});
+
+// ===== Review =====
+function renderReviewList() {
+  var entries = [];
+  for (var k in appState.learned) { entries.push([k, appState.learned[k]]); }
+  var remCount = 0, forgotCount = 0;
+  for (var i=0;i<entries.length;i++) { if(entries[i][1].remembered) remCount++; else forgotCount++; }
+  document.getElementById('reviewRemembered').textContent = remCount;
+  document.getElementById('reviewForgot').textContent = forgotCount;
+  document.getElementById('reviewTotal').textContent = entries.length;
+
+  var list = document.getElementById('reviewList');
+  list.innerHTML = '';
+
+  var filtered = entries;
+  if (reviewFilter === 'forgot') {
+    filtered = entries.filter(function(e){return !e[1].remembered});
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="review-empty"><div style="font-size:64px">&#128218;</div><div>' +
+      (reviewFilter === 'forgot' ? '没有需要复习的单词！' : '还没有学习记录') + '</div></div>';
+    return;
+  }
+
+  filtered.sort(function(a,b){return (b[1].lastTime||0)-(a[1].lastTime||0)});
+
+  for (var i=0;i<filtered.length;i++) {
+    var word = filtered[i][0], state = filtered[i][1];
+    var vocabItem = null;
+    for (var j=0;j<VOCAB.length;j++) { if(VOCAB[j][0]===word){vocabItem=VOCAB[j];break;} }
+    if (!vocabItem) continue;
+
+    var item = document.createElement('div');
+    item.className = 'review-item';
+    var escWord = word.replace(/'/g, "\\'");
+    item.innerHTML =
+      '<div class="review-item-word">' + vocabItem[0] + '</div>' +
+      '<div class="review-item-phonetic">' + (vocabItem[1] ? '/' + vocabItem[1] + '/' : '') + '</div>' +
+      '<div class="review-item-meaning">' + vocabItem[3] + '</div>' +
+      '<span class="review-item-status ' + (state.remembered ? 'status-remembered' : 'status-forgot') + '">' +
+        (state.remembered ? '已掌握' : '待复习') + '</span>' +
+      '<button class="review-item-speak" onclick="speakWord(\'' + escWord + '\')">' +
+        '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>' +
+      '</button>';
+    list.appendChild(item);
+  }
+}
+
+function startReviewWrong() {
+  var wrongWords = [];
+  for (var k in appState.learned) {
+    if (!appState.learned[k].remembered) {
+      for (var j=0;j<VOCAB.length;j++) { if(VOCAB[j][0]===k){wrongWords.push(VOCAB[j]);break;} }
+    }
+  }
+  if (wrongWords.length === 0) { alert('没有需要复习的错词！'); return; }
+  startStudy(wrongWords.slice(0, 100));
+}
+
+// ===== Dictionary =====
+function searchDict() {
+  var query = document.getElementById('dictSearch').value.trim().toLowerCase();
+  var resultDiv = document.getElementById('dictResult');
+  if (!query) {
+    resultDiv.innerHTML = '<div class="dict-not-found">输入单词查看释义和发音</div>';
+    return;
+  }
+
+  var found = null;
+  var fuzzy = [];
+  for (var i=0;i<VOCAB.length;i++) {
+    var w = VOCAB[i][0].toLowerCase();
+    if (w === query) { found = VOCAB[i]; break; }
+    if (w.indexOf(query) === 0 && fuzzy.length < 10) fuzzy.push(VOCAB[i]);
+  }
+
+  if (found) {
+    var lvClass = LV_MAP[found[4]] || 'lv3';
+    var escWord = found[0].replace(/'/g, "\\'");
+    resultDiv.innerHTML =
+      '<div class="dict-result fade-in">' +
+        '<div style="display:flex;align-items:center;gap:16px;justify-content:center;margin-bottom:8px;">' +
+          '<div class="dict-word">' + found[0] + '</div>' +
+          '<button class="speak-btn" style="width:44px;height:44px;flex-shrink:0" onclick="speakWord(\'' + escWord + '\')">' +
+            '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="dict-phonetic">' + (found[1] ? '/' + found[1] + '/' : '') + '</div>' +
+        '<div class="dict-pos">' + (found[2] || '') + '</div>' +
+        '<div class="dict-meaning">' + found[3] + '</div>' +
+        '<div class="dict-level">' + found[4] + '词汇</div>' +
+        '<div class="speed-control" style="margin-top:12px;">' +
+          '<span class="speed-label">语速:</span>' +
+          '<button class="speed-btn" data-rate="0.7" onclick="setRate(this);speakWord(\'' + escWord + '\')">慢</button>' +
+          '<button class="speed-btn active" data-rate="1" onclick="setRate(this);speakWord(\'' + escWord + '\')">正常</button>' +
+          '<button class="speed-btn" data-rate="1.3" onclick="setRate(this);speakWord(\'' + escWord + '\')">快</button>' +
+        '</div>' +
+      '</div>';
+  } else if (fuzzy.length > 0) {
+    var html = '';
+    for (var i=0;i<fuzzy.length;i++) {
+      var f = fuzzy[i];
+      var escF = f[0].replace(/'/g, "\\'");
+      html += '<div class="review-item" style="margin-bottom:8px" onclick="document.getElementById(\'dictSearch\').value=\'' + escF + '\';searchDict();">' +
+        '<div class="review-item-word">' + f[0] + '</div>' +
+        '<div class="review-item-phonetic">' + (f[1] ? '/' + f[1] + '/' : '') + '</div>' +
+        '<div class="review-item-meaning">' + f[3] + '</div>' +
+        '<button class="review-item-speak" onclick="event.stopPropagation();speakWord(\'' + escF + '\')">' +
+          '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>' +
+        '</button>' +
+      '</div>';
+    }
+    resultDiv.innerHTML = html;
+  } else {
+    resultDiv.innerHTML = '<div class="dict-not-found">未找到该单词</div>';
+  }
+}
+
+// ===== Browse Card Mode (single card paging) =====
+var bcLevelSel = '五星';
+var bcSourceSel = 'all';
+var bcWords = [];
+var bcIndex = 0;
+
+// Level option clicks
+document.querySelectorAll('#bcLevelRow .card-setup-opt').forEach(function(opt) {
+  opt.addEventListener('click', function() {
+    document.querySelectorAll('#bcLevelRow .card-setup-opt').forEach(function(o){o.classList.remove('selected')});
+    opt.classList.add('selected');
+    bcLevelSel = opt.getAttribute('data-level');
+  });
+});
+document.querySelectorAll('#bcSourceRow .card-setup-opt').forEach(function(opt) {
+  opt.addEventListener('click', function() {
+    document.querySelectorAll('#bcSourceRow .card-setup-opt').forEach(function(o){o.classList.remove('selected')});
+    opt.classList.add('selected');
+    bcSourceSel = opt.getAttribute('data-source');
+  });
+});
+
+function startBrowseCards() {
+  var count = parseInt(document.getElementById('bcCountSlider').value);
+  var pool = VOCAB;
+  if (bcLevelSel !== 'all') {
+    pool = pool.filter(function(w){ return w[4] === bcLevelSel; });
+  }
+  if (bcSourceSel === 'unlearned') {
+    pool = pool.filter(function(w){ return !appState.learned[w[0]]; });
+  } else if (bcSourceSel === 'forgot') {
+    pool = pool.filter(function(w){ return appState.learned[w[0]] && !appState.learned[w[0]].remembered; });
+  }
+  if (pool.length === 0) { alert('没有符合条件的单词，请调整筛选条件'); return; }
+  shuffle(pool);
+  bcWords = pool.slice(0, count);
+  bcIndex = 0;
+
+  document.getElementById('bcSetupPanel').style.display = 'none';
+  document.getElementById('bcBrowsePanel').style.display = 'block';
+  document.getElementById('bcTotal').textContent = bcWords.length;
+  bcShowCard();
+}
+
+function bcShowCard() {
+  if (bcIndex < 0 || bcIndex >= bcWords.length) return;
+  var w = bcWords[bcIndex];
+  var lvClass = LV_MAP[w[4]] || 'lv3';
+
+  var card = document.getElementById('bcCard');
+  card.className = 'bc-card ' + lvClass;
+
+  var tag = document.getElementById('bcLevelTag');
+  tag.className = 'bc-level-tag ' + lvClass;
+  tag.textContent = w[4];
+
+  document.getElementById('bcWord').textContent = w[0];
+  document.getElementById('bcPhonetic').textContent = w[1] ? '/' + w[1] + '/' : '';
+  document.getElementById('bcPos').textContent = w[2] || '';
+  document.getElementById('bcMeaning').textContent = w[3];
+
+  document.getElementById('bcCurrent').textContent = bcIndex + 1;
+  var pct = (bcIndex / bcWords.length) * 100;
+  document.getElementById('bcProgFill').style.width = pct + '%';
+
+  document.getElementById('bcPrevBtn').disabled = (bcIndex <= 0);
+  document.getElementById('bcNextBtn').disabled = (bcIndex >= bcWords.length - 1);
+
+  // Auto speak
+  setTimeout(function(){ speakWord(w[0]); }, 200);
+}
+
+function bcNext() {
+  if (bcIndex < bcWords.length - 1) { bcIndex++; bcShowCard(); }
+}
+function bcPrev() {
+  if (bcIndex > 0) { bcIndex--; bcShowCard(); }
+}
+function bcSpeak() {
+  if (bcWords.length > 0) speakWord(bcWords[bcIndex][0]);
+}
+
+function exitBrowseCards() {
+  bcWords = [];
+  bcIndex = 0;
+  document.getElementById('bcBrowsePanel').style.display = 'none';
+  document.getElementById('bcSetupPanel').style.display = 'block';
+}
+
+// Keyboard for browse card
+document.addEventListener('keydown', function(e) {
+  var page = document.getElementById('page-flashcard');
+  if (!page.classList.contains('active')) return;
+  if (bcWords.length === 0) return;
+  if (e.code === 'ArrowRight') { e.preventDefault(); bcNext(); }
+  else if (e.code === 'ArrowLeft') { e.preventDefault(); bcPrev(); }
+  else if (e.code === 'Space') { e.preventDefault(); bcSpeak(); }
+});
+
+// Touch swipe for browse card
+(function() {
+  var startX = 0, startY = 0, dragging = false;
+  var wrapper = document.getElementById('bcBrowsePanel');
+  wrapper.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dragging = true;
+  }, {passive:true});
+  wrapper.addEventListener('touchmove', function(e) {
+    if (!dragging) return;
+    // allow scroll
+  }, {passive:true});
+  wrapper.addEventListener('touchend', function(e) {
+    if (!dragging) return;
+    dragging = false;
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 40 && Math.abs(dy) < 40) {
+      // tap — speak
+      bcSpeak();
+      return;
+    }
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) bcNext(); else bcPrev();
+    }
+  }, {passive:true});
+})();
+
+// ===== Utilities =====
+function shuffle(arr) {
+  for (var i=arr.length-1;i>0;i--) {
+    var j = Math.floor(Math.random()*(i+1));
+    var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+  }
+  return arr;
+}
+
+// ===== Settings: Export/Import/Clear =====
+function exportProgress() {
+  var count = Object.keys(appState.learned).length;
+  if (count === 0) { alert('暂无学习记录可导出'); return; }
+  var data = {
+    version: 1,
+    exportTime: new Date().toISOString(),
+    learned: appState.learned
+  };
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'vocab3153_progress_' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importProgress(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.learned || typeof data.learned !== 'object') {
+        alert('文件格式不正确，请选择之前导出的进度文件');
+        return;
+      }
+      var importedCount = Object.keys(data.learned).length;
+      var existingCount = Object.keys(appState.learned).length;
+      var merged = 0, updated = 0;
+      for (var k in data.learned) {
+        if (!appState.learned[k]) {
+          appState.learned[k] = data.learned[k];
+          merged++;
+        } else {
+          if ((data.learned[k].lastTime || 0) > (appState.learned[k].lastTime || 0)) {
+            appState.learned[k] = data.learned[k];
+            updated++;
+          }
+        }
+      }
+      saveState();
+      updateLevelProgress();
+      updateSettingsPage();
+      alert('导入成功！新增 ' + merged + ' 条，更新 ' + updated + ' 条记录');
+    } catch (err) {
+      alert('导入失败：文件解析错误 - ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearProgress() {
+  var count = Object.keys(appState.learned).length;
+  if (count === 0) { alert('暂无学习记录'); return; }
+  if (!confirm('确定清除所有 ' + count + ' 条学习记录？\n此操作不可恢复！')) return;
+  if (!confirm('再次确认：真的要清除吗？请先导出备份！')) return;
+  appState.learned = {};
+  saveState();
+  updateLevelProgress();
+  updateSettingsPage();
+  alert('已清除所有学习记录');
+}
+
+function updateSettingsPage() {
+  var count = Object.keys(appState.learned).length;
+  var el = document.getElementById('exportCount');
+  if (el) el.textContent = count;
+  var total = document.getElementById('aboutTotal');
+  if (total) total.textContent = VOCAB.length;
+}
+
+// Update settings page when tab is shown
+var _origTabHandler = function(){};
+document.querySelectorAll('.nav-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    if (tab.getAttribute('data-page') === 'settings') {
+      updateSettingsPage();
+    }
+  });
+});
+
+// Init
+updateLevelProgress();
+</script>
+</body>
+</html>
