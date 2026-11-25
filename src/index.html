@@ -579,18 +579,42 @@ function speakCurrent() {
 
 function speakWord(word) {
   if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  var u = new SpeechSynthesisUtterance(word);
-  u.lang = 'en-US';
-  u.rate = speakRate;
-  u.pitch = 1;
-  var voices = window.speechSynthesis.getVoices();
-  var v = null;
-  for (var i=0;i<voices.length;i++) {
-    if (voices[i].lang && voices[i].lang.indexOf('en')===0) { v = voices[i]; break; }
-  }
-  if (v) u.voice = v;
-  window.speechSynthesis.speak(u);
+  var synth = window.speechSynthesis;
+  try {
+    // 唤醒可能被卡住的语音队列（仅在 paused 时生效，无副作用）
+    if (synth.paused) { synth.resume(); }
+    synth.cancel();
+
+    function speakNow() {
+      var u = new SpeechSynthesisUtterance(word);
+      u.lang = 'en-US';
+      u.rate = speakRate;
+      u.pitch = 1;
+      var voices = synth.getVoices();
+      var v = null;
+      for (var i=0;i<voices.length;i++) {
+        if (voices[i].lang && voices[i].lang.indexOf('en')===0) { v = voices[i]; break; }
+      }
+      if (v) u.voice = v;
+      synth.speak(u);
+    }
+
+    // 首次加载 voices 是异步的，空数组时直接说会静默无声 —— 等它就绪
+    if (synth.getVoices().length === 0) {
+      var fired = false;
+      var onReady = function() {
+        if (fired) return;
+        fired = true;
+        synth.onvoiceschanged = null;
+        speakNow();
+      };
+      synth.onvoiceschanged = onReady;
+      setTimeout(onReady, 1200);
+    } else {
+      // cancel 后立刻 speak 在部分 Chrome 会被吞，错开一小段
+      setTimeout(speakNow, 30);
+    }
+  } catch(e) {}
 }
 
 function setRate(btn) {
@@ -602,7 +626,6 @@ function setRate(btn) {
 // Ensure voices loaded
 if ('speechSynthesis' in window) {
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = function(){};
 }
 
 // ===== Keyboard =====
