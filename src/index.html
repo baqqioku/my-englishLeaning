@@ -510,7 +510,10 @@ function showCurrentWord() {
   meaningEl.classList.remove('show');
 
   currentStudy.meaningShown = false;
-  setTimeout(function(){ speakCurrent(); }, 300);
+  preloadAudio(word);
+  var nextWord = currentStudy.words[currentStudy.index + 1];
+  if (nextWord) preloadAudio(nextWord[0]);
+  setTimeout(function(){ speakCurrent(); }, 30);
 }
 
 function showMeaning() {
@@ -588,9 +591,30 @@ var TTS_MODE_KEY = 'ttsMode';
 var ttsMode = 'us';
 try { ttsMode = localStorage.getItem(TTS_MODE_KEY) || 'us'; } catch(e) {}
 
-var ttsAudio = new Audio();
-ttsAudio.preload = 'auto';
+var audioCache = {};
+var ttsAudio = null;
 var playToken = 0;
+
+function ttsUrl(word, mode) {
+  return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) +
+    '&type=' + (mode === 'uk' ? 1 : 2);
+}
+
+function cachedAudio(word) {
+  var key = ttsMode + '|' + word;
+  if (!audioCache[key]) {
+    var a = new Audio(ttsUrl(word, ttsMode));
+    a.preload = 'auto';
+    audioCache[key] = a;
+  }
+  return audioCache[key];
+}
+
+function preloadAudio(word) {
+  if (!word || ttsMode === 'system') return;
+  var a = cachedAudio(word);
+  if (a.readyState === 0) { try { a.load(); } catch(e) {} }
+}
 
 // 系统语音只作离线备用：避开搞笑/特效语音，优先自然嗓音
 var NATURAL_VOICE_RE = /(samantha|alex|ava|allison|susan|daniel|reed|sandy|shelley|flo|karen|moira|kathy|zira|aria|jenny|guy|natural|neural|premium|enhanced|google us english|microsoft)/i;
@@ -673,13 +697,14 @@ function speakWord(word) {
     return;
   }
   try {
-    ttsAudio.pause();
-    ttsAudio.src = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) +
-      '&type=' + (ttsMode === 'uk' ? 1 : 2);
-    ttsAudio.playbackRate = speakRate;
+    var a = cachedAudio(word);
+    if (ttsAudio && ttsAudio !== a) { try { ttsAudio.pause(); } catch(e) {} }
+    ttsAudio = a;
+    if (a.readyState > 0) { try { a.currentTime = 0; } catch(e) {} }
+    a.playbackRate = speakRate;
     var fallback = function() { if (token === playToken) speakSystem(word); };
-    ttsAudio.onerror = fallback;
-    var p = ttsAudio.play();
+    a.onerror = fallback;
+    var p = a.play();
     if (p && typeof p.catch === 'function') { p.catch(fallback); }
   } catch(e) {
     speakSystem(word);
@@ -905,8 +930,13 @@ function bcShowCard() {
   document.getElementById('bcPrevBtn').disabled = (bcIndex <= 0);
   document.getElementById('bcNextBtn').disabled = (bcIndex >= bcWords.length - 1);
 
-  // Auto speak
-  setTimeout(function(){ speakWord(w[0]); }, 200);
+  // Auto speak：当前词和前后各两个词提前加载，翻页即播
+  preloadAudio(w[0]);
+  for (var i = 1; i <= 2; i++) {
+    if (bcWords[bcIndex + i]) preloadAudio(bcWords[bcIndex + i][0]);
+    if (bcWords[bcIndex - i]) preloadAudio(bcWords[bcIndex - i][0]);
+  }
+  setTimeout(function(){ speakWord(w[0]); }, 20);
 }
 
 function bcNext() {
