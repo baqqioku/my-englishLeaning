@@ -1,0 +1,43 @@
+<view class="page" wx:if="{{setup}}">
+  <view class="section-title">等级</view>
+  <view class="segment">
+    <view wx:for="{{levelLabels}}" wx:key="*this" class="segment-item {{levelIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectLevel">{{item}}</view>
+  </view>
+
+  <view class="section-title">来源</view>
+  <view class="segment">
+    <view wx:for="{{sourceLabels}}" wx:key="*this" class="segment-item {{sourceIndex === index ? 'active' : ''}}" data-index="{{index}}" bindtap="selectSource">{{item}}</view>
+  </view>
+
+  <view class="panel">
+    <view class="row">
+      <text class="row-label">卡片数量</text>
+      <text class="row-value">{{count}}</text>
+    </view>
+    <slider min="5" max="100" step="5" value="{{count}}" bindchanging="onCountChange" bindchange="onCountChange" activeColor="#6c63ff" backgroundColor="#252540" block-color="#6c63ff" />
+    <button class="btn btn-primary btn-block" style="margin-top:28rpx" bindtap="start">开始浏览</button>
+  </view>
+</view>
+
+<view class="page" wx:if="{{!setup && card}}">
+  <view class="study-progress">
+    <text>{{index}} / {{total}}</text>
+    <view class="progress-track"><view class="progress-fill" style="width:{{pct}}%"></view></view>
+  </view>
+
+  <view class="word-card {{card.lvClass}}" bindtouchstart="handleTouchStart" bindtouchend="handleTouchEnd" bindtap="speak">
+    <view class="word-level">{{card.level}}</view>
+    <view class="word-text">{{card.word}}</view>
+    <view class="word-phonetic" wx:if="{{card.phonetic}}">/{{card.phonetic}}/</view>
+    <view class="word-pos" wx:if="{{card.pos}}">{{card.pos}}</view>
+    <view class="speak-btn" style="margin-top:32rpx">🔊</view>
+    <view class="word-meaning">{{card.meaning}}</view>
+  </view>
+
+  <view class="btn-row">
+    <button class="btn btn-ghost" bindtap="prev" disabled="{{index <= 1}}">上一张</button>
+    <button class="btn btn-ghost" bindtap="next" disabled="{{index >= total}}">下一张</button>
+  </view>
+  <button class="btn btn-primary btn-block" style="margin-top:16rpx" bindtap="back">返回设置</button>
+  <view class="hint">左右滑动切换卡片，点击卡片可重新发音</view>
+</view>

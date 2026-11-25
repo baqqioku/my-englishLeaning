@@ -1,0 +1,33 @@
+<view class="page" wx:if="{{!finished}}">
+  <view class="study-progress">
+    <text>{{index}} / {{total}}</text>
+    <view class="progress-track"><view class="progress-fill" style="width:{{pct}}%"></view></view>
+    <text>{{pct}}%</text>
+  </view>
+
+  <view class="word-card {{lvClass}}">
+    <view class="word-level">{{level}}</view>
+    <view class="word-text">{{word}}</view>
+    <view class="word-phonetic" wx:if="{{phonetic}}">/{{phonetic}}/</view>
+    <view class="word-pos" wx:if="{{pos}}">{{pos}}</view>
+    <view class="speak-btn" style="margin-top:32rpx" bindtap="speak">🔊</view>
+    <view class="word-meaning" wx:if="{{meaningShown}}">{{meaning}}</view>
+  </view>
+
+  <button class="btn btn-ghost btn-block" wx:if="{{!meaningShown}}" bindtap="showMeaning">显示释义</button>
+  <view class="btn-row">
+    <button class="btn btn-danger" data-remembered="false" bindtap="mark">不认识</button>
+    <button class="btn btn-success" data-remembered="true" bindtap="mark">认识</button>
+  </view>
+  <view class="hint">提示：点击喇叭可重复播放发音</view>
+</view>
+
+<view class="page" wx:if="{{finished}}">
+  <view class="result-score">{{score}}%</view>
+  <view class="panel" style="text-align:center">
+    <view class="row"><text class="row-label">认识</text><text class="row-value">{{remCount}}</text></view>
+    <view class="row"><text class="row-label">不认识</text><text class="row-value" style="color:#ff6584">{{forgotCount}}</text></view>
+  </view>
+  <button class="btn btn-primary btn-block" wx:if="{{forgotCount > 0}}" bindtap="reviewWrong">复习不认识的单词</button>
+  <button class="btn btn-ghost btn-block" style="margin-top:16rpx" bindtap="backHome">返回首页</button>
+</view>

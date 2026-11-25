@@ -1,0 +1,17 @@
+{
+  "description": "超频语境 3153 分级词汇微信小程序",
+  "projectname": "english-vocab-miniprogram",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "./",
+  "libVersion": "3.0.0",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true
+  },
+  "condition": {}
+}

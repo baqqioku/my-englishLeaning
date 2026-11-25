@@ -1,0 +1,33 @@
+<view class="page">
+  <view class="stats">
+    <view class="stat">
+      <view class="stat-num" style="color:#4ecdc4">{{remCount}}</view>
+      <view class="stat-label">认识</view>
+    </view>
+    <view class="stat">
+      <view class="stat-num" style="color:#ff6584">{{forgotCount}}</view>
+      <view class="stat-label">不认识</view>
+    </view>
+  </view>
+
+  <view class="segment">
+    <view class="segment-item {{filter === 'all' ? 'active' : ''}}" data-filter="all" bindtap="setFilter">全部</view>
+    <view class="segment-item {{filter === 'remembered' ? 'active' : ''}}" data-filter="remembered" bindtap="setFilter">认识</view>
+    <view class="segment-item {{filter === 'forgot' ? 'active' : ''}}" data-filter="forgot" bindtap="setFilter">不认识</view>
+  </view>
+
+  <view class="btn-row">
+    <button class="btn btn-primary" bindtap="reviewAll">全部复习</button>
+    <button class="btn btn-danger" bindtap="reviewForgot">复习不认识</button>
+  </view>
+
+  <view class="empty" wx:if="{{items.length === 0}}">暂无记录，先去学习几个单词吧</view>
+
+  <view class="review-item" wx:for="{{items}}" wx:key="word" data-word="{{item.word}}" bindtap="speak">
+    <view class="speak-btn small">🔊</view>
+    <view class="review-word">{{item.word}}</view>
+    <view class="review-meaning">{{item.meaning}}</view>
+    <view class="tag {{item.remembered ? 'tag-remembered' : 'tag-forgot'}}">{{item.remembered ? '认识' : '不认识'}}</view>
+  </view>
+  <view class="hint">点击任意词条可重新发音</view>
+</view>
