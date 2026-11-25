@@ -224,7 +224,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <button class="speed-btn" data-rate="0.7" onclick="setRate(this)">慢</button>
       <button class="speed-btn active" data-rate="1" onclick="setRate(this)">正常</button>
       <button class="speed-btn" data-rate="1.3" onclick="setRate(this)">快</button>
-      <select class="voice-select" id="voiceSelect" title="选择发音" onchange="onVoiceChange(this)"></select>
+      <select class="voice-select" id="voiceSelect" title="选择发音" onchange="onVoiceChange(this)">
+        <option value="us">美音（真人）</option>
+        <option value="uk">英音（真人）</option>
+        <option value="system">系统语音（备用）</option>
+      </select>
     </div>
     <div class="word-pos" id="wordPos"></div>
     <div class="word-meaning" id="wordMeaning"></div>
@@ -580,11 +584,15 @@ function speakCurrent() {
   speakWord(currentStudy.words[currentStudy.index][0]);
 }
 
-var VOICE_KEY = 'ttsVoiceURI';
-var preferredVoiceURI = '';
-try { preferredVoiceURI = localStorage.getItem(VOICE_KEY) || ''; } catch(e) {}
+var TTS_MODE_KEY = 'ttsMode';
+var ttsMode = 'us';
+try { ttsMode = localStorage.getItem(TTS_MODE_KEY) || 'us'; } catch(e) {}
 
-// 自然发音优先；后半段是系统自带的搞笑/特效语音，必须避开
+var ttsAudio = new Audio();
+ttsAudio.preload = 'auto';
+var playToken = 0;
+
+// 系统语音只作离线备用：避开搞笑/特效语音，优先自然嗓音
 var NATURAL_VOICE_RE = /(samantha|alex|ava|allison|susan|daniel|reed|sandy|shelley|flo|karen|moira|kathy|zira|aria|jenny|guy|natural|neural|premium|enhanced|google us english|microsoft)/i;
 var NOVELTY_VOICE_RE = /(bad news|good news|bahh|bells|boing|bubbles|cellos|jester|junior|organ|ralph|superstar|trinoids|whisper|wobble|zarvox|albert|fred|rocko|grandma|grandpa)/i;
 
@@ -610,48 +618,14 @@ function englishVoices() {
 
 function pickVoice(voices) {
   if (!voices.length) return null;
-  if (preferredVoiceURI) {
-    for (var i = 0; i < voices.length; i++) {
-      if (voices[i].voiceURI === preferredVoiceURI) return voices[i];
-    }
-  }
   var best = voices[0];
-  for (var j = 1; j < voices.length; j++) {
-    if (voiceScore(voices[j]) > voiceScore(best)) best = voices[j];
+  for (var i = 1; i < voices.length; i++) {
+    if (voiceScore(voices[i]) > voiceScore(best)) best = voices[i];
   }
   return best;
 }
 
-function escAttr(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-}
-
-function refreshVoiceOptions() {
-  var sel = document.getElementById('voiceSelect');
-  if (!sel || !englishVoices().length) return;
-  var voices = englishVoices().slice().sort(function(a, b) { return voiceScore(b) - voiceScore(a); });
-  var selected = pickVoice(voices);
-  sel.innerHTML = voices.map(function(v) {
-    return '<option value="' + escAttr(v.voiceURI) + '">' + escAttr(v.name) + ' (' + v.lang + ')</option>';
-  }).join('');
-  var found = false;
-  for (var i = 0; i < voices.length; i++) {
-    if (voices[i].voiceURI === preferredVoiceURI) { found = true; break; }
-  }
-  if (preferredVoiceURI && !found) {
-    preferredVoiceURI = '';
-    try { localStorage.removeItem(VOICE_KEY); } catch(e) {}
-  }
-  if (selected) sel.value = selected.voiceURI;
-}
-
-function onVoiceChange(sel) {
-  preferredVoiceURI = sel.value;
-  try { localStorage.setItem(VOICE_KEY, preferredVoiceURI); } catch(e) {}
-  speakWord('hello');
-}
-
-function speakWord(word) {
+function speakSystem(word) {
   if (!('speechSynthesis' in window)) return;
   var synth = window.speechSynthesis;
   try {
@@ -673,7 +647,6 @@ function speakWord(word) {
       synth.speak(u);
     }
 
-    // voices 首次加载是异步的，空数组时直接说会静默无声
     if (englishVoices().length === 0) {
       var fired = false;
       var onReady = function() {
@@ -684,10 +657,39 @@ function speakWord(word) {
       synth.addEventListener('voiceschanged', onReady, { once: true });
       setTimeout(onReady, 1500);
     } else {
-      // cancel 后立刻 speak 在部分 Chrome 会被吞，错开一小段
       setTimeout(speakNow, 30);
     }
   } catch(e) {}
+}
+
+function speakWord(word) {
+  playToken++;
+  var token = playToken;
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch(e) {}
+  }
+  if (ttsMode === 'system') {
+    speakSystem(word);
+    return;
+  }
+  try {
+    ttsAudio.pause();
+    ttsAudio.src = 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) +
+      '&type=' + (ttsMode === 'uk' ? 1 : 2);
+    ttsAudio.playbackRate = speakRate;
+    var fallback = function() { if (token === playToken) speakSystem(word); };
+    ttsAudio.onerror = fallback;
+    var p = ttsAudio.play();
+    if (p && typeof p.catch === 'function') { p.catch(fallback); }
+  } catch(e) {
+    speakSystem(word);
+  }
+}
+
+function onVoiceChange(sel) {
+  ttsMode = sel.value;
+  try { localStorage.setItem(TTS_MODE_KEY, ttsMode); } catch(e) {}
+  speakWord('hello');
 }
 
 function setRate(btn) {
@@ -696,13 +698,10 @@ function setRate(btn) {
   speakRate = parseFloat(btn.getAttribute('data-rate'));
 }
 
-// 语音列表异步就绪后填充发音选项
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.getVoices();
-  window.speechSynthesis.addEventListener('voiceschanged', refreshVoiceOptions);
-  setTimeout(refreshVoiceOptions, 300);
-  setTimeout(refreshVoiceOptions, 1500);
-}
+(function() {
+  var sel = document.getElementById('voiceSelect');
+  if (sel) sel.value = ttsMode;
+})();
 
 // ===== Keyboard =====
 document.addEventListener('keydown', function(e) {
