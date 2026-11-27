@@ -338,6 +338,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">数据管理</h2>
 
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">云端同步</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:8px;">学习时自动同步到云端 SQLite，多设备共享同一份进度。</p>
+    <div style="margin-bottom:12px;">
+      <span style="font-size:12px;color:var(--text2);">状态: <strong id="cloudSyncStatus">未同步</strong></span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-start" style="padding:12px;font-size:14px;" onclick="uploadToCloud()">上传到云端</button>
+      <button class="btn-start" style="padding:12px;font-size:14px;background:linear-gradient(135deg,var(--success),#2ecc71);" onclick="syncFromCloud(true)">从云端恢复</button>
+    </div>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
     <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;">导出学习进度</h3>
     <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">将当前学习记录导出为JSON文件，可备份或在其他设备导入恢复。</p>
     <div style="margin-bottom:12px;">
@@ -366,7 +378,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       数据来源: 网易内部3153分级词汇书<br>
       词汇总数: <span id="aboutTotal">2959</span> 词<br>
       发音引擎: Web Speech API (浏览器内置)<br>
-      数据存储: 浏览器本地 (localStorage)
+      数据存储: 浏览器本地 + 云端 SQLite 自动同步
     </p>
   </div>
 </div>
@@ -400,10 +412,14 @@ var LV_CN = {'lv5':'五星','lv4':'四星','lv3':'三星'};
 
 // ===== State =====
 var STORAGE_KEY = 'vocab3153';
+var CLOUD_API = 'http://47.90.240.152:3002';
+var CLOUD_TOKEN = 'vocab3153-sync-token';
 var appState = loadState();
 var currentStudy = null;
 var speakRate = 1;
 var reviewFilter = 'all';
+var _syncTimer = null;
+var _syncing = false;
 
 function loadState() {
   try { var s = localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch(e){}
@@ -412,6 +428,106 @@ function loadState() {
 
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch(e){}
+  scheduleCloudUpload();
+}
+
+// ===== Cloud Sync =====
+function _mergeLearned(remote) {
+  var added = 0, updated = 0;
+  for (var w in remote) {
+    if (!appState.learned[w]) {
+      appState.learned[w] = remote[w];
+      added++;
+    } else if ((remote[w].lastTime || 0) > (appState.learned[w].lastTime || 0)) {
+      appState.learned[w] = remote[w];
+      updated++;
+    }
+  }
+  return { added: added, updated: updated };
+}
+
+function setSyncStatus(text, color) {
+  var el = document.getElementById('cloudSyncStatus');
+  if (el) { el.textContent = text; el.style.color = color || 'var(--text2)'; }
+}
+
+function syncFromCloud(manual) {
+  if (_syncing) return;
+  _syncing = true;
+  setSyncStatus('正在从云端同步...', 'var(--text2)');
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', CLOUD_API + '/api/progress', true);
+  xhr.setRequestHeader('X-Sync-Token', CLOUD_TOKEN);
+  xhr.timeout = 8000;
+  xhr.onload = function() {
+    _syncing = false;
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        var result = _mergeLearned(data.learned || {});
+        saveStateLocal();
+        updateLevelProgress();
+        updateSettingsPage();
+        if (manual) {
+          alert('同步完成：从云端新增 ' + result.added + ' 条，更新 ' + result.updated + ' 条；本地进度正在上传');
+        }
+        uploadToCloud();
+      } catch (e) {
+        setSyncStatus('同步失败：数据解析错误', 'var(--accent2)');
+      }
+    } else {
+      setSyncStatus('同步失败：' + xhr.status, 'var(--accent2)');
+      if (manual) alert('从云端同步失败（' + xhr.status + '），请检查云端服务是否运行');
+    }
+  };
+  xhr.onerror = function() {
+    _syncing = false;
+    setSyncStatus('云端不可用 · 使用本地数据', 'var(--accent2)');
+    if (manual) alert('无法连接云端服务，请检查网络或云端服务');
+  };
+  xhr.ontimeout = function() {
+    _syncing = false;
+    setSyncStatus('云端连接超时 · 使用本地数据', 'var(--accent2)');
+    if (manual) alert('连接云端超时，请稍后重试');
+  };
+  xhr.send();
+}
+
+function saveStateLocal() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch(e){}
+}
+
+function uploadToCloud() {
+  if (_syncing) return;
+  _syncing = true;
+  setSyncStatus('正在上传...', 'var(--text2)');
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', CLOUD_API + '/api/progress', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.setRequestHeader('X-Sync-Token', CLOUD_TOKEN);
+  xhr.timeout = 8000;
+  xhr.onload = function() {
+    _syncing = false;
+    if (xhr.status === 200) {
+      setSyncStatus('已上传 · ' + new Date().toLocaleTimeString(), 'var(--success)');
+    } else {
+      setSyncStatus('上传失败：' + xhr.status, 'var(--accent2)');
+    }
+  };
+  xhr.onerror = function() {
+    _syncing = false;
+    setSyncStatus('上传失败 · 云端不可用', 'var(--accent2)');
+  };
+  xhr.ontimeout = function() {
+    _syncing = false;
+    setSyncStatus('上传超时', 'var(--accent2)');
+  };
+  xhr.send(JSON.stringify({ learned: appState.learned }));
+}
+
+function scheduleCloudUpload() {
+  if (_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(function() { _syncTimer = null; uploadToCloud(); }, 1500);
 }
 
 // ===== Navigation =====
@@ -1094,6 +1210,7 @@ document.querySelectorAll('.nav-tab').forEach(function(tab) {
 
 // Init
 updateLevelProgress();
+syncFromCloud();
 </script>
 </body>
 </html>

@@ -40,3 +40,8 @@ lerna-debug.log*
 
 # WorkBuddy internal data
 .workbuddy/
+
+# Sync SQLite database
+progress.sqlite
+progress.sqlite-*
+sync-server.log
